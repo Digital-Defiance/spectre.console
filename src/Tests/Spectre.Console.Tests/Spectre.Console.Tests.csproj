@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Spectre.Console.Tests.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Spectre.Console.Cli\Spectre.Console.Cli.csproj" />
-    <ProjectReference Include="..\..\Spectre.Console.Testing\Spectre.Console.Testing.csproj" />
     <ProjectReference Include="..\..\Spectre.Console\Spectre.Console.csproj" />
     <ProjectReference Include="..\..\Extensions\Spectre.Console.Json\Spectre.Console.Json.csproj" />
   </ItemGroup>

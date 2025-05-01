@@ -1,0 +1,78 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using Spectre.Console.BlazorWasm
+@inject IJSRuntime JS
+
+<canvas @ref="_canvasRef"
+        id="pixel-console-canvas"
+        width="@CanvasWidth"
+        height="@CanvasHeight"
+        style="@MergedStyle"
+        @attributes="AdditionalAttributes">
+</canvas>
+
+@code {
+    [Parameter]
+    public int CanvasWidth { get; set; } = 800;
+    [Parameter]
+    public int CanvasHeight { get; set; } = 800; // Increased height for more vertical content
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string MergedStyle =>
+        $"border:1px solid #333; background:black; display:block;" +
+        (string.IsNullOrWhiteSpace(Style) ? "" : $" {Style}");
+
+    private ElementReference _canvasRef;
+    private DotNetObjectReference<PixelConsole>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+
+            // Set up device pixel ratio scaling for crisp rendering
+            await JS.InvokeVoidAsync("setupPixelConsoleCanvasDPR", _canvasRef, CanvasWidth, CanvasHeight);
+
+            // Draw a demo string with color
+            await JS.InvokeVoidAsync("drawPixelConsoleText", _canvasRef, "Spectre.Console WASM Pixel Terminal", 20, 40, "#00ff00", 32, true);
+            await JS.InvokeVoidAsync("drawPixelConsoleText", _canvasRef, "✓ 2-bit color ✓ 3-bit color ✓ 4-bit color ✓ 8-bit color ✓ Truecolor", 20, 80, "#ffcc00", 20, false);
+        }
+    }
+
+    public async Task DrawText(string text, int x, int y, string color, int fontSize = 20)
+    {
+        await JS.InvokeVoidAsync("drawPixelConsoleText", _canvasRef, text, x, y, color, fontSize);
+    }
+
+    // Render a PixelTerminalBuffer to the canvas
+    public async Task RenderBuffer(PixelTerminalBuffer buffer, int cellWidth = 16, int cellHeight = 24)
+    {
+        for (int y = 0; y < buffer.Height; y++)
+        {
+            for (int x = 0; x < buffer.Width; x++)
+            {
+                var cell = buffer.Buffer[x, y];
+                await JS.InvokeVoidAsync(
+                    "drawPixelConsoleCell",
+                    _canvasRef,
+                    cell.Char.ToString(),
+                    x * cellWidth,
+                    y * cellHeight,
+                    cellWidth,
+                    cellHeight,
+                    cell.FgColor,
+                    cell.BgColor,
+                    cell.Bold,
+                    cell.Underline
+                );
+            }
+        }
+    }
+}

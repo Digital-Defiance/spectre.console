@@ -6,6 +6,10 @@ namespace Spectre.Console;
 public sealed class AnsiConsoleSettings
 {
     /// <summary>
+    /// Gets or sets the input device.
+    /// </summary>
+    public IAnsiConsoleInput? Input { get; set; }
+    /// <summary>
     /// Gets or sets a value indicating whether or
     /// not ANSI escape sequences are supported.
     /// </summary>
